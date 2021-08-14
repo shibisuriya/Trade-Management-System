@@ -1,0 +1,49 @@
+.day {
+    border: 1px solid black;
+    padding: 0.5em;
+    margin: 0.5em;
+}
+
+.dayControls {
+    padding: 0.5em;
+}
+
+.tradeControls {
+    padding: 0.5em;
+}
+input {
+    margin: 0.2em;
+    height: 1.5em;
+}
+select {
+    margin: 0.2em;
+    height: 1.5em;
+    text-align: center;
+}
+button {
+    margin: 0.2em;
+    height: 1.5em;
+}
+.uneditable-textbox {
+    text-align: center;
+}
+.editable-select {
+    text-align: center;
+}
+.inputbox-large {
+    width: 18em;
+}
+.inputbox-medium {
+    width: 12em;
+}
+.inputbox-small {
+    width: 5em;
+}
+.editable-textbox {
+    text-align: right;
+}
+.modal {
+    border: 1px solid black;
+    padding: 1em;
+    margin: 1em;
+}

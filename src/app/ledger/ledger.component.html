@@ -1,0 +1,78 @@
+<div>
+    <button (click)="stressTest()">stress test</button>
+    <button (click)="addDay()">Add day</button>
+    <button (click)="clearLedger()">Clear ledger</button>
+  </div>
+  <form [formGroup]="ledgerForm">
+    <div formArrayName="ledger">
+        <div *ngFor="let day of ledger.controls; let i=index" [formGroupName]="i" class="day">
+            <div>
+                <div class="dayControls">
+                    <input type="date" placeholder="Date" formControlName="date" />
+                    <select formControlName="creditOrDebit" class="editable-select">
+                        <option selected disabled value=null hidden>Credit / Debit</option>
+                        <option value="credit">Credit</option>
+                        <option value="debit">Debit</option>
+                    </select>
+                    <input type="text" placeholder="Amount" formControlName="amount" />
+  
+                    <input type="text" placeholder="Total turnover" formControlName="totalTurnover"
+                        class="uneditable-textbox" />
+                    <input type="text" placeholder="Total commission" formControlName="totalCommission"
+                        class="uneditable-textbox" />
+                    <input type="text" placeholder="Calculated Credit / Debit" formControlName="calculatedCreditOrDebit"
+                        class="uneditable-textbox inputbox-large" />
+                    <button (click)="removeDay(i)">X</button>
+                </div>
+                <div class="tradeControls">
+                    <div>
+                        <button (click)="addTrade(i)">Add trade</button>
+                        <button (click)="clearTrades(i, day)">Clear trades</button>
+                    </div>
+                    <div formArrayName="trades">
+                        <div *ngFor="let trade of getTrades(i).controls; let j=index" [formGroupName]="j">
+                            <select formControlName="intradayOrDelivery" (change)="calculate(trade, day)"
+                                class="editable-select">
+                                <option selected disabled hidden value=null>Intraday / Delivery</option>
+                                <option value="intraday">Intraday</option>
+                                <option value="delivery">Delivery</option>
+                            </select>
+                            <select formControlName="buyOrSell" (change)="calculate(trade, day)"
+                                class="editable-select">
+                                <option selected disabled hidden value=null>Buy / Sell</option>
+                                <option value="buy">Buy</option>
+                                <option value="sell">Sell</option>
+                            </select>
+                            <select formControlName="exchange" (change)="calculate(trade, day)" class="editable-select">
+                                <option value=null selected disabled hidden>Exchange</option>
+                                <option value="nse">NSE</option>
+                                <option value="bse">BSE</option>
+                            </select>
+                            <input type="text" placeholder="Quantity" formControlName="qty"
+                                (input)="calculate(trade, day)" class="inputbox-small" class="editable-textbox" />
+                            <input type="text" placeholder="Price" formControlName="price"
+                                (input)="calculate(trade, day)" class="inputbox-small" class="editable-textbox" />
+                            <input type="text" formControlName="turnover" placeholder="Turnover"
+                                class="uneditable-textbox inputbox-small" />
+                            <input type='text' formControlName="calculatedCommission"
+                                placeholder="Calculated commission" class="uneditable-textbox inputbox-medium" />
+                            <input type="text" formControlName="turnoverPlusOrMinusCommission"
+                                placeholder="Turnover +/- Commission" class="uneditable-textbox" />
+                            <button (click)="showCommissionBreakdown(i, j, trade)">View commission breakdown</button>
+                            <button (click)="removeTrade(i, j, day)">X</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  
+  </form>
+  <div>
+    {{ledgerForm.value | json}}
+  </div>
+  <div class="modal">
+    <button>Close modal</button>
+    <h2>Commission breakdown</h2>
+  </div>
+  
