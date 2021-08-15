@@ -31,6 +31,7 @@
                     </div>
                     <div formArrayName="trades">
                         <div *ngFor="let trade of getTrades(i).controls; let j=index" [formGroupName]="j">
+                            <input type="text" formControlName="tradeNumber" placeholder="Trade Number" class="inputbox-medium" />
                             <select formControlName="intradayOrDelivery" (change)="calculate(trade, day)"
                                 class="editable-select">
                                 <option selected disabled hidden value=null>Intraday / Delivery</option>
@@ -49,16 +50,16 @@
                                 <option value="bse">BSE</option>
                             </select>
                             <input type="text" placeholder="Quantity" formControlName="qty"
-                                (input)="calculate(trade, day)" class="inputbox-small" class="editable-textbox" />
+                                (input)="calculate(trade, day)" class="inputbox-small editable-textbox" />
                             <input type="text" placeholder="Price" formControlName="price"
-                                (input)="calculate(trade, day)" class="inputbox-small" class="editable-textbox" />
+                                (input)="calculate(trade, day)" class="inputbox-small editable-textbox" />
                             <input type="text" formControlName="turnover" placeholder="Turnover"
-                                class="uneditable-textbox inputbox-small" />
+                                class="uneditable-textbox" />
                             <input type='text' formControlName="calculatedCommission"
                                 placeholder="Calculated commission" class="uneditable-textbox inputbox-medium" />
                             <input type="text" formControlName="turnoverPlusOrMinusCommission"
                                 placeholder="Turnover +/- Commission" class="uneditable-textbox" />
-                            <button (click)="showCommissionBreakdown(i, j, trade)">View commission breakdown</button>
+                            <button (click)="showCommissionBreakdown(trade)">View</button>
                             <button (click)="removeTrade(i, j, day)">X</button>
                         </div>
                     </div>
@@ -71,8 +72,14 @@
   <div>
     {{ledgerForm.value | json}}
   </div>
-  <div class="modal">
-    <button>Close modal</button>
+  <div class="modal" *ngIf="commissionBreakdownModal">
+    <button (click)="commissionBreakdownModal = false">Close modal</button>
     <h2>Commission breakdown</h2>
+    <h4>Brokerage : {{modalBrokerage}}</h4>
+    <h4>STT : {{modalStt}}</h4>
+    <h4>Transaction Charges : {{modalTransactionCharges}}</h4>
+    <h4>GST : {{modalGst}}</h4>
+    <h4>SEBI Charges : {{modalSebiCharges}}</h4>
+    <h4>Stamp Charges : {{modalStampCharges}}</h4>
   </div>
   

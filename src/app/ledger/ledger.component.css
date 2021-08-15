@@ -46,4 +46,9 @@ button {
     border: 1px solid black;
     padding: 1em;
     margin: 1em;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background-color: black;
+    color: white;
 }

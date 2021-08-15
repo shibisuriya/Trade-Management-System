@@ -1,3 +1,4 @@
+import { TransitiveCompileNgModuleMetadata } from '@angular/compiler';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, AbstractControl } from '@angular/forms';
 
@@ -9,6 +10,16 @@ import { FormBuilder, FormGroup, FormArray, AbstractControl } from '@angular/for
 })
 export class LedgerComponent implements OnInit {
   ledgerForm: FormGroup;
+  
+  //Modal variables
+  modalBrokerage: number = 0;
+  modalStt: number = 0;
+  modalTransactionCharges = 0;
+  modalGst: number = 0;
+  modalSebiCharges: number = 0;
+  modalStampCharges: number = 0;
+  commissionBreakdownModal: boolean = false;
+
   constructor(private _fb: FormBuilder) {
     this.ledgerForm = this._fb.group({
       "ledger": this._fb.array([])
@@ -42,6 +53,7 @@ export class LedgerComponent implements OnInit {
   }
   addTrade(i: number) {
     let trade = this._fb.group({
+      "tradeNumber": [null],
       "qty": [null],
       "price": [null],
       "intradayOrDelivery": [null],
@@ -83,15 +95,17 @@ export class LedgerComponent implements OnInit {
     let price: number = trade.get('price')?.value
     let qty: number = trade.get('qty')?.value
     if (isNaN(price) || isNaN(qty) || qty == null || price == null || price.toString() == "" || qty.toString() == "" || price == 0 || qty == 0 || price < 0 || qty < 0) {
+      //Clear turnover, calculated commission, turnover +/- calculated commission and commissionBreakdown (components of commission). 
       let oldTurnover = trade.get('turnover')?.value;
-      trade.get('calculatedCommission')?.patchValue(null)
-      trade.get('turnoverPlusOrMinusCommission')?.patchValue(null)
-      if (trade.get('turnover')?.value != null) {
+      if (oldTurnover != null) {
         let oldTotalTurnover: number = day.get('totalTurnover')?.value
         let newTotalTurnover: number = oldTotalTurnover - oldTurnover;
         day.get('totalTurnover')?.patchValue(newTotalTurnover)
       }
       trade.get('turnover')?.patchValue(null)
+      trade.get('calculatedCommission')?.patchValue(null)
+      trade.get('turnoverPlusOrMinusCommission')?.patchValue(null)
+      trade.get('commissionBreakdown')?.reset()
       return
     }
     let turnover: number = price * qty
@@ -109,7 +123,7 @@ export class LedgerComponent implements OnInit {
     if (intradayOrDelivery == null || buyOrSell == null || exchange == null)
       return
 
-    let calculatedCommission = this.calculateCommission(buyOrSell, intradayOrDelivery, exchange, qty, price)
+    let calculatedCommission = this.calculateCommission(buyOrSell, intradayOrDelivery, exchange, qty, price, trade)
     let turnoverPlusOrMinusCommission: number = 0;
     trade.get('calculatedCommission')?.patchValue(calculatedCommission)
     if (buyOrSell == "buy") {
@@ -126,7 +140,7 @@ export class LedgerComponent implements OnInit {
     day.get('calculatedCreditOrDebit')?.patchValue(newCalculatedCreditOrDebit)
 
   }
-  calculateCommission(buyOrSell: string, intradayOrDelivery: string, exchange: string, qty: number, price: number): number {
+  calculateCommission(buyOrSell: string, intradayOrDelivery: string, exchange: string, qty: number, price: number, trade: AbstractControl): number {
     //Constants
     //Common
     const GSTFactor = 18 / 100;
@@ -136,6 +150,7 @@ export class LedgerComponent implements OnInit {
     const deliveryTransactionChargesFactorNse = 0.00345 / 100;
     const deliveryTransactionChargesFactorBse = 0.00345 / 100;
     const deliveryStampChargesFactor = 0.015 / 100;
+    const zerodhaDpCharges = 15.93;
 
     //Intraday
     const intradayBrokerageFactor: number = 0.03 / 100;
@@ -152,6 +167,7 @@ export class LedgerComponent implements OnInit {
     let gst: number = 0;
     let sebiCharges: number = 0;
     let stampCharges: number = 0;
+    let dpCharges: number = 0;
 
     //Equity delivery
     if (intradayOrDelivery === "delivery") {
@@ -163,9 +179,10 @@ export class LedgerComponent implements OnInit {
         transactionCharges = turnover * deliveryTransactionChargesFactorBse;
       if (buyOrSell === "buy")
         stampCharges = turnover * deliveryStampChargesFactor;
-      else if (buyOrSell == "sell")
+      else if (buyOrSell == "sell") {
         stampCharges = 0;
-
+        dpCharges = zerodhaDpCharges;
+      }
     }
 
     //Equity intrday 
@@ -190,16 +207,38 @@ export class LedgerComponent implements OnInit {
     gst = GSTFactor * (brokerage + transactionCharges);
     sebiCharges = sebiCharges = sebiChargesFactor * turnover;
 
+    //Round all variable to two decimal places.
+    brokerage = this.roundToTwoDecimals(brokerage)
+    stt = this.roundToTwoDecimals(stt)
+    transactionCharges = this.roundToTwoDecimals(transactionCharges)
+    gst = this.roundToTwoDecimals(gst)
+    sebiCharges = this.roundToTwoDecimals(sebiCharges)
+    stampCharges = this.roundToTwoDecimals(stampCharges)
+
+    //Assign the calculated components of commission to the form controls.
+    trade.get('commissionBreakdown')?.get('brokerage')?.patchValue(brokerage);
+    trade.get('commissionBreakdown')?.get('stt')?.patchValue(stt)
+    trade.get('commissionBreakdown')?.get('transactionCharges')?.patchValue(transactionCharges)
+    trade.get('commissionBreakdown')?.get('gst')?.patchValue(gst)
+    trade.get('commissionBreakdown')?.get('sebiCharges')?.patchValue(sebiCharges)
+    trade.get('commissionBreakdown')?.get('stampCharges')?.patchValue(stampCharges)
+
     let totalCommission = brokerage + stt + transactionCharges + gst + sebiCharges + stampCharges;
-    return this.roundToTwoDecimals(totalCommission);
+    return totalCommission;
   }
 
   roundToTwoDecimals(num: number) {
     var m = Number((Math.abs(num) * 100).toPrecision(15));
     return Math.round(m) / 100 * Math.sign(num);
   }
-  showCommissionBreakdown(i: number, j: number, trade: AbstractControl) {
-
+  showCommissionBreakdown(trade: AbstractControl) {
+    this.modalBrokerage = trade.get('commissionBreakdown')?.get('brokerage')?.value;
+    this.modalStt = trade.get('commissionBreakdown')?.get('stt')?.value
+    this.modalTransactionCharges = trade.get('commissionBreakdown')?.get('transactionCharges')?.value
+    this.modalGst = trade.get('commissionBreakdown')?.get('gst')?.value
+    this.modalSebiCharges = trade.get('commissionBreakdown')?.get('sebiCharges')?.value
+    this.modalStampCharges = trade.get('commissionBreakdown')?.get('stampCharges')?.value
+    this.commissionBreakdownModal = true;
   }
   stressTest() {
     for (let i = 0; i < 300; i++) {
