@@ -1,21 +1,34 @@
 <div>
-    <button (click)="stressTest()">stress test</button>
+    <!-- <button (click)="stressTest()">stress test</button> -->
     <button (click)="addDay()">Add day</button>
-    <button (click)="clearLedger()">Clear ledger</button>
-  </div>
-  <form [formGroup]="ledgerForm">
+    <button (click)="clearLedger()" >Clear ledger</button>
+    <button [disabled]="!ledgerForm.valid">Upload all</button>
+    <div>
+        <div>
+            <label>From: </label>
+            <input type="date" />
+        </div>
+        <div>
+            <label>To: </label>
+            <input type="date" />
+        </div>
+    </div>
+</div>
+<form [formGroup]="ledgerForm">
     <div formArrayName="ledger">
         <div *ngFor="let day of ledger.controls; let i=index" [formGroupName]="i" class="day">
             <div>
                 <div class="dayControls">
-                    <input type="date" placeholder="Date" formControlName="date" />
-                    <select formControlName="creditOrDebit" class="editable-select">
+                    <input type="date" placeholder="Date" formControlName="date"
+                        [ngClass]="{'invalid-input': day.get('date')?.errors && day.get('date')?.touched}" />
+                    <select formControlName="creditOrDebit" class="editable-select"
+                        [ngClass]="{'invalid-input': day.get('creditOrDebit')?.errors && day.get('creditOrDebit')?.touched}">
                         <option selected disabled value=null hidden>Credit / Debit</option>
                         <option value="credit">Credit</option>
                         <option value="debit">Debit</option>
                     </select>
                     <input type="text" placeholder="Amount" formControlName="amount" />
-  
+
                     <input type="text" placeholder="Total turnover" formControlName="totalTurnover"
                         class="uneditable-textbox" />
                     <input type="text" placeholder="Total commission" formControlName="totalCommission"
@@ -28,10 +41,13 @@
                     <div>
                         <button (click)="addTrade(i)">Add trade</button>
                         <button (click)="clearTrades(i, day)">Clear trades</button>
+                        <button>Sort Trades</button>
+                        <button [disabled]="!day.valid">Upload</button>
                     </div>
                     <div formArrayName="trades">
                         <div *ngFor="let trade of getTrades(i).controls; let j=index" [formGroupName]="j">
-                            <input type="text" formControlName="tradeNumber" placeholder="Trade Number" class="inputbox-medium" />
+                            <input type="text" formControlName="tradeNumber" placeholder="Trade Number"
+                                class="inputbox-medium" />
                             <select formControlName="intradayOrDelivery" (change)="calculate(trade, day)"
                                 class="editable-select">
                                 <option selected disabled hidden value=null>Intraday / Delivery</option>
@@ -49,9 +65,9 @@
                                 <option value="nse">NSE</option>
                                 <option value="bse">BSE</option>
                             </select>
-                            <input type="text" placeholder="Quantity" formControlName="qty"
+                            <input type="number" placeholder="Quantity" formControlName="qty"
                                 (input)="calculate(trade, day)" class="inputbox-small editable-textbox" />
-                            <input type="text" placeholder="Price" formControlName="price"
+                            <input type="number" placeholder="Price" formControlName="price"
                                 (input)="calculate(trade, day)" class="inputbox-small editable-textbox" />
                             <input type="text" formControlName="turnover" placeholder="Turnover"
                                 class="uneditable-textbox" />
@@ -67,12 +83,12 @@
             </div>
         </div>
     </div>
-  
-  </form>
-  <div>
-    {{ledgerForm.value | json}}
-  </div>
-  <div class="modal" *ngIf="commissionBreakdownModal">
+
+</form>
+<div>
+    {{ledger.value | json}}
+</div>
+<div class="modal" *ngIf="commissionBreakdownModal">
     <button (click)="commissionBreakdownModal = false">Close modal</button>
     <h2>Commission breakdown</h2>
     <h4>Brokerage : {{modalBrokerage}}</h4>
@@ -81,5 +97,4 @@
     <h4>GST : {{modalGst}}</h4>
     <h4>SEBI Charges : {{modalSebiCharges}}</h4>
     <h4>Stamp Charges : {{modalStampCharges}}</h4>
-  </div>
-  
+</div>

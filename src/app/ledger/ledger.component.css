@@ -52,3 +52,6 @@ button {
     background-color: black;
     color: white;
 }
+.invalid-input {
+    border: 1px solid red;
+}

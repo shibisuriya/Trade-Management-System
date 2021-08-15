@@ -1,6 +1,6 @@
 import { TransitiveCompileNgModuleMetadata } from '@angular/compiler';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, AbstractControl, Validators } from '@angular/forms';
 
 
 @Component({
@@ -10,7 +10,7 @@ import { FormBuilder, FormGroup, FormArray, AbstractControl } from '@angular/for
 })
 export class LedgerComponent implements OnInit {
   ledgerForm: FormGroup;
-  
+
   //Modal variables
   modalBrokerage: number = 0;
   modalStt: number = 0;
@@ -34,12 +34,12 @@ export class LedgerComponent implements OnInit {
   }
   addDay() {
     let day = this._fb.group({
-      "date": [null],
-      "creditOrDebit": [null],
-      "amount": [null],
-      "totalTurnover": [null],
-      "calculatedCreditOrDebit": [null],
-      "totalCommission": [null],
+      "date": [null, [Validators.required]],
+      "creditOrDebit": [null, [Validators.required]],
+      "amount": [null, [Validators.required]],
+      "totalTurnover": [null, [Validators.required]],
+      "calculatedCreditOrDebit": [null, [Validators.required]],
+      "totalCommission": [null, [Validators.required]],
       "trades": this._fb.array([])
     });
     this.ledger.push(day)
@@ -53,22 +53,22 @@ export class LedgerComponent implements OnInit {
   }
   addTrade(i: number) {
     let trade = this._fb.group({
-      "tradeNumber": [null],
-      "qty": [null],
-      "price": [null],
-      "intradayOrDelivery": [null],
-      "exchange": [null],
-      "buyOrSell": [null],
-      "turnover": [null],
-      "calculatedCommission": [null],
+      "tradeNumber": [null, [Validators.required]],
+      "qty": [null, [Validators.required]],
+      "price": [null, [Validators.required]],
+      "intradayOrDelivery": [null, [Validators.required]],
+      "exchange": [null, [Validators.required]],
+      "buyOrSell": [null, [Validators.required]],
+      "turnover": [null, [Validators.required]],
+      "calculatedCommission": [null, [Validators.required]],
       "turnoverPlusOrMinusCommission": [null],
       "commissionBreakdown": this._fb.group({
-        "brokerage": [null],
-        "stt": [null],
-        "transactionCharges": [null],
-        "gst": [null],
-        "sebiCharges": [null],
-        "stampCharges": [null]
+        "brokerage": [null, [Validators.required]],
+        "stt": [null, [Validators.required]],
+        "transactionCharges": [null, [Validators.required]],
+        "gst": [null, [Validators.required]],
+        "sebiCharges": [null, [Validators.required]],
+        "stampCharges": [null, [Validators.required]]
       })
     });
     (this.ledger.at(i).get('trades') as FormArray).push(trade)
