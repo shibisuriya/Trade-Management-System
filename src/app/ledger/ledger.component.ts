@@ -75,6 +75,8 @@ export class LedgerComponent implements OnInit {
   }
   clearTrades(i: number, day: AbstractControl) {
     day.get('totalTurnover')?.patchValue(null);
+    day.get('totalCalculatedCommission')?.patchValue(null);
+    day.get('calculatedCreditOrDebit')?.patchValue(null);
     (this.ledger.at(i).get('trades') as FormArray).clear()
   }
   getTrades(i: number) {
