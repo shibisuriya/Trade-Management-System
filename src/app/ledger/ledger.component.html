@@ -31,7 +31,7 @@
 
                     <input type="text" placeholder="Total turnover" formControlName="totalTurnover"
                         class="uneditable-textbox" />
-                    <input type="text" placeholder="Total commission" formControlName="totalCommission"
+                    <input type="text" placeholder="Total commission" formControlName="totalCalculatedCommission"
                         class="uneditable-textbox" />
                     <input type="text" placeholder="Calculated Credit / Debit" formControlName="calculatedCreditOrDebit"
                         class="uneditable-textbox inputbox-large" />
@@ -76,7 +76,7 @@
                             <input type="text" formControlName="turnoverPlusOrMinusCommission"
                                 placeholder="Turnover +/- Commission" class="uneditable-textbox" />
                             <button (click)="showCommissionBreakdown(trade)">View</button>
-                            <button (click)="removeTrade(i, j, day)">X</button>
+                            <button (click)="removeTrade(trade, day, j)">X</button>
                         </div>
                     </div>
                 </div>

@@ -39,7 +39,7 @@ export class LedgerComponent implements OnInit {
       "amount": [null, [Validators.required]],
       "totalTurnover": [null, [Validators.required]],
       "calculatedCreditOrDebit": [null, [Validators.required]],
-      "totalCommission": [null, [Validators.required]],
+      "totalCalculatedCommission": [null, [Validators.required]],
       "trades": this._fb.array([])
     });
     this.ledger.push(day)
@@ -80,28 +80,46 @@ export class LedgerComponent implements OnInit {
   getTrades(i: number) {
     return (this.ledger.at(i).get('trades') as FormArray)
   }
-  removeTrade(i: number, j: number, day: AbstractControl) {
-    let turnover = this.getTrades(i).at(j).get('turnover')?.value
-    if (turnover != null) {
+  removeTrade(trade: AbstractControl, day: AbstractControl, j: number) {
+    let oldTurnover = trade.get('turnover')?.value
+    if (oldTurnover != null) {
       let oldTotalTurnover = day.get('totalTurnover')?.value
-      let newTotalTurnover = oldTotalTurnover - turnover;
+      let newTotalTurnover = oldTotalTurnover - oldTurnover;
       day.get('totalTurnover')?.patchValue(newTotalTurnover)
     }
-    this.getTrades(i).removeAt(j)
+    let oldCalculateCommission = trade.get('calculatedCommission')?.value
+    if(oldCalculateCommission != null || oldCalculateCommission != 0) {
+      let oldTotalCalculatedCommission = day.get('totalCalculatedCommission')?.value
+      let newTotalCalculatedCommission = this.roundToTwoDecimals(oldTotalCalculatedCommission - oldCalculateCommission);
+      day.get('totalCalculatedCommission')?.patchValue(newTotalCalculatedCommission)
+    }
+    (day.get('trades') as FormArray).removeAt(j)
 
   }
   calculate(trade: AbstractControl, day: AbstractControl) {
-    //Extract data from the the form which is going to be used for the calculation of turnover and commission.
     let price: number = trade.get('price')?.value
     let qty: number = trade.get('qty')?.value
     if (isNaN(price) || isNaN(qty) || qty == null || price == null || price.toString() == "" || qty.toString() == "" || price == 0 || qty == 0 || price < 0 || qty < 0) {
-      //Clear turnover, calculated commission, turnover +/- calculated commission and commissionBreakdown (components of commission). 
       let oldTurnover = trade.get('turnover')?.value;
+      let oldCalculatedCommission = trade.get('calculatedCommission')?.value;
+      let oldTurnoverPlusOrMinusCommission = trade.get('turnoverPlusOrMinusCommission')?.value
+
       if (oldTurnover != null) {
         let oldTotalTurnover: number = day.get('totalTurnover')?.value
         let newTotalTurnover: number = oldTotalTurnover - oldTurnover;
         day.get('totalTurnover')?.patchValue(newTotalTurnover)
       }
+      if (oldCalculatedCommission != null) {
+        let oldTotalCommission: number = day.get('totalCalculatedCommission')?.value
+        let newTotalCommission: number = this.roundToTwoDecimals(oldTotalCommission - oldCalculatedCommission)
+        day.get("totalCalculatedCommission")?.patchValue(newTotalCommission)
+      }
+      if (oldTurnoverPlusOrMinusCommission != null) {
+        let oldCalculatedCreditOrDebit = day.get('calculatedCreditOrDebit')?.value
+        let newCalculatedCreditOrDebit = oldCalculatedCreditOrDebit - oldTurnoverPlusOrMinusCommission
+        day.get('calculatedCreditOrDebit')?.patchValue(newCalculatedCreditOrDebit)
+      }
+
       trade.get('turnover')?.patchValue(null)
       trade.get('calculatedCommission')?.patchValue(null)
       trade.get('turnoverPlusOrMinusCommission')?.patchValue(null)
@@ -123,9 +141,9 @@ export class LedgerComponent implements OnInit {
     if (intradayOrDelivery == null || buyOrSell == null || exchange == null)
       return
 
-    let calculatedCommission = this.calculateCommission(buyOrSell, intradayOrDelivery, exchange, qty, price, trade)
+    let calculatedCommission: number = this.calculateCommission(buyOrSell, intradayOrDelivery, exchange, qty, price, trade)
     let turnoverPlusOrMinusCommission: number = 0;
-    trade.get('calculatedCommission')?.patchValue(calculatedCommission)
+
     if (buyOrSell == "buy") {
       turnoverPlusOrMinusCommission = -(turnover + calculatedCommission)
       trade.get('turnoverPlusOrMinusCommission')?.patchValue(turnoverPlusOrMinusCommission)
@@ -134,10 +152,21 @@ export class LedgerComponent implements OnInit {
       trade.get('turnoverPlusOrMinusCommission')?.patchValue(turnoverPlusOrMinusCommission)
     }
 
-    //Update calculatedCreditOrDebit in day.  
-    let oldCalculatedCreditOrDebit = day.get('calculatedCreditOrDebit')?.value;
-    let newCalculatedCreditOrDebit = oldCalculatedCreditOrDebit - turnoverPlusOrMinusCommission
-    day.get('calculatedCreditOrDebit')?.patchValue(newCalculatedCreditOrDebit)
+    // //Update calculatedCreditOrDebit in day.  
+    // let oldCalculatedCreditOrDebit = day.get('calculatedCreditOrDebit')?.value;
+    // let newCalculatedCreditOrDebit = oldCalculatedCreditOrDebit - turnoverPlusOrMinusCommission
+    // day.get('calculatedCreditOrDebit')?.patchValue(newCalculatedCreditOrDebit)
+
+    //Update total calculated commission
+    let oldTotalCalculatedCommission: number = day.get('totalCalculatedCommission')?.value
+    let oldCalculatedCommission: number = trade.get('calculatedCommission')?.value
+
+    let newTotalCalculatedCommission: number = oldTotalCalculatedCommission - oldCalculatedCommission
+    newTotalCalculatedCommission += calculatedCommission
+    newTotalCalculatedCommission = this.roundToTwoDecimals(newTotalCalculatedCommission)
+    trade.get('calculatedCommission')?.patchValue(calculatedCommission)
+    day.get('totalCalculatedCommission')?.patchValue(newTotalCalculatedCommission)
+
 
   }
   calculateCommission(buyOrSell: string, intradayOrDelivery: string, exchange: string, qty: number, price: number, trade: AbstractControl): number {
@@ -224,7 +253,7 @@ export class LedgerComponent implements OnInit {
     trade.get('commissionBreakdown')?.get('stampCharges')?.patchValue(stampCharges)
 
     let totalCommission = brokerage + stt + transactionCharges + gst + sebiCharges + stampCharges;
-    return totalCommission;
+    return this.roundToTwoDecimals(totalCommission);
   }
 
   roundToTwoDecimals(num: number) {
