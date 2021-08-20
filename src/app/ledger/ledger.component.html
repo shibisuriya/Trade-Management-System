@@ -1,7 +1,7 @@
 <div>
     <!-- <button (click)="stressTest()">stress test</button> -->
     <button (click)="addDay()">Add day</button>
-    <button (click)="clearLedger()" >Clear ledger</button>
+    <button (click)="clearLedger()">Clear ledger</button>
     <button [disabled]="!ledgerForm.valid">Upload all</button>
     <div>
         <div>
@@ -66,9 +66,11 @@
                                 <option value="bse">BSE</option>
                             </select>
                             <input type="number" placeholder="Quantity" formControlName="qty"
-                                (input)="calculate(trade, day)" class="inputbox-small editable-textbox" />
+                                (input)="calculate(trade, day)" class="inputbox-small editable-textbox"
+                                [ngClass]="{'invalid-input': trade.get('qty')?.errors && trade.get('qty')?.touched }" />
                             <input type="number" placeholder="Price" formControlName="price"
-                                (input)="calculate(trade, day)" class="inputbox-small editable-textbox" />
+                                (input)="calculate(trade, day)" class="inputbox-small editable-textbox"
+                                [ngClass]="{'invalid-input': trade.get('price')?.errors && trade.get('price')?.touched }" />
                             <input type="text" formControlName="turnover" placeholder="Turnover"
                                 class="uneditable-textbox" />
                             <input type='text' formControlName="calculatedCommission"

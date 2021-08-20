@@ -54,8 +54,8 @@ export class LedgerComponent implements OnInit {
   addTrade(i: number) {
     let trade = this._fb.group({
       "tradeNumber": [null, [Validators.required]],
-      "qty": [null, [Validators.required]],
-      "price": [null, [Validators.required]],
+      "qty": [null, [Validators.required, Validators.pattern(/^[0-9]*$/)]],
+      "price": [null, [Validators.required, Validators.pattern(/^[0-9]+(\.[0-9][0-9]?)?/)]],
       "intradayOrDelivery": [null, [Validators.required]],
       "exchange": [null, [Validators.required]],
       "buyOrSell": [null, [Validators.required]],
