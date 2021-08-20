@@ -154,14 +154,8 @@ export class LedgerComponent implements OnInit {
 
     let oldTurnoverPlusOrMinusCommission: number = trade.get('turnoverPlusOrMinusCommission')?.value
     let oldCalculatedCreditOrDebit: number = day.get('calculatedCreditOrDebit')?.value
-    let newCalculatedCreditOrDebit: number = 0;
-    if(oldTurnoverPlusOrMinusCommission != null)
-      newCalculatedCreditOrDebit = oldCalculatedCreditOrDebit - oldTurnoverPlusOrMinusCommission
-    else 
-      newCalculatedCreditOrDebit = oldCalculatedCreditOrDebit
+    let newCalculatedCreditOrDebit: number = oldCalculatedCreditOrDebit - oldTurnoverPlusOrMinusCommission
     newCalculatedCreditOrDebit += turnoverPlusOrMinusCommission
-
-
     day.get('calculatedCreditOrDebit')?.patchValue(newCalculatedCreditOrDebit)
     trade.get('turnoverPlusOrMinusCommission')?.patchValue(turnoverPlusOrMinusCommission)
 
