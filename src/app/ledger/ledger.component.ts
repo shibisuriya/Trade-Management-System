@@ -95,13 +95,22 @@ export class LedgerComponent implements OnInit {
       let newTotalCalculatedCommission = this.roundToTwoDecimals(oldTotalCalculatedCommission - oldCalculateCommission);
       day.get('totalCalculatedCommission')?.patchValue(newTotalCalculatedCommission)
     }
+    let oldTurnoverPlusOrMinusCommission = trade.get('turnoverPlusOrMinusCommission')?.value
+    if (oldTurnoverPlusOrMinusCommission != null) {
+      let oldCalculatedCreditOrDebit = day.get('calculatedCreditOrDebit')?.value
+      let newCalculatedCreditOrDebit = this.roundToTwoDecimals(oldCalculatedCreditOrDebit - oldTurnoverPlusOrMinusCommission)
+      day.get('calculatedCreditOrDebit')?.patchValue(newCalculatedCreditOrDebit)
+    }
     (day.get('trades') as FormArray).removeAt(j)
 
   }
   calculate(trade: AbstractControl, day: AbstractControl) {
     let price: number = trade.get('price')?.value
     let qty: number = trade.get('qty')?.value
-    if (isNaN(price) || isNaN(qty) || qty == null || price == null || price.toString() == "" || qty.toString() == "" || price == 0 || qty == 0 || price < 0 || qty < 0) {
+    if (isNaN(price) || isNaN(qty) || qty == null ||
+      price == null || price.toString() == "" || qty.toString() == "" ||
+      price == 0 || qty == 0 || price < 0 || qty < 0) {
+
       let oldTurnover = trade.get('turnover')?.value;
       let oldCalculatedCommission = trade.get('calculatedCommission')?.value;
       let oldTurnoverPlusOrMinusCommission = trade.get('turnoverPlusOrMinusCommission')?.value
@@ -118,7 +127,7 @@ export class LedgerComponent implements OnInit {
       }
       if (oldTurnoverPlusOrMinusCommission != null) {
         let oldCalculatedCreditOrDebit = day.get('calculatedCreditOrDebit')?.value
-        let newCalculatedCreditOrDebit: number =  oldCalculatedCreditOrDebit - oldTurnoverPlusOrMinusCommission
+        let newCalculatedCreditOrDebit: number = oldCalculatedCreditOrDebit - oldTurnoverPlusOrMinusCommission
         day.get('calculatedCreditOrDebit')?.patchValue(newCalculatedCreditOrDebit)
       }
 
@@ -128,8 +137,8 @@ export class LedgerComponent implements OnInit {
       trade.get('commissionBreakdown')?.reset()
       return
     }
-    let turnover: number = price * qty
 
+    let turnover: number = price * qty
     let oldTurnover = trade.get('turnover')?.value;
     let oldTotalTurnover: number = day.get('totalTurnover')?.value
     let newTotalTurnover: number = oldTotalTurnover - oldTurnover + turnover
@@ -139,28 +148,17 @@ export class LedgerComponent implements OnInit {
     let intradayOrDelivery: string = trade.get('intradayOrDelivery')?.value
     let buyOrSell: string = trade.get('buyOrSell')?.value
     let exchange: string = trade.get('exchange')?.value
-
     if (intradayOrDelivery == null || buyOrSell == null || exchange == null)
       return
 
     let calculatedCommission: number = this.calculateCommission(buyOrSell, intradayOrDelivery, exchange, qty, price, trade)
     let turnoverPlusOrMinusCommission: number = 0;
-
     if (buyOrSell == "buy") {
       turnoverPlusOrMinusCommission = -(turnover + calculatedCommission)
     } else if (buyOrSell == "sell") {
       turnoverPlusOrMinusCommission = (turnover - calculatedCommission)
     }
 
-    let oldTurnoverPlusOrMinusCommission: number = trade.get('turnoverPlusOrMinusCommission')?.value
-    let oldCalculatedCreditOrDebit: number = day.get('calculatedCreditOrDebit')?.value
-    let newCalculatedCreditOrDebit: number = oldCalculatedCreditOrDebit - oldTurnoverPlusOrMinusCommission
-    newCalculatedCreditOrDebit += turnoverPlusOrMinusCommission
-    day.get('calculatedCreditOrDebit')?.patchValue(newCalculatedCreditOrDebit)
-    trade.get('turnoverPlusOrMinusCommission')?.patchValue(turnoverPlusOrMinusCommission)
-
-
-    //Update calculatedCommission (in trade) and totalCalulcatedCommission (in day)
     let oldTotalCalculatedCommission: number = day.get('totalCalculatedCommission')?.value
     let oldCalculatedCommission: number = trade.get('calculatedCommission')?.value
     let newTotalCalculatedCommission: number = oldTotalCalculatedCommission - oldCalculatedCommission
@@ -169,7 +167,13 @@ export class LedgerComponent implements OnInit {
     trade.get('calculatedCommission')?.patchValue(calculatedCommission)
     day.get('totalCalculatedCommission')?.patchValue(newTotalCalculatedCommission)
 
-
+    let oldTurnoverPlusOrMinusCommission: number = trade.get('turnoverPlusOrMinusCommission')?.value
+    let oldCalculatedCreditOrDebit: number = day.get('calculatedCreditOrDebit')?.value
+    let newCalculatedCreditOrDebit: number = oldCalculatedCreditOrDebit - oldTurnoverPlusOrMinusCommission
+    newCalculatedCreditOrDebit += turnoverPlusOrMinusCommission
+    newCalculatedCreditOrDebit = this.roundToTwoDecimals(newCalculatedCreditOrDebit)
+    day.get('calculatedCreditOrDebit')?.patchValue(newCalculatedCreditOrDebit)
+    trade.get('turnoverPlusOrMinusCommission')?.patchValue(turnoverPlusOrMinusCommission)
   }
   calculateCommission(buyOrSell: string, intradayOrDelivery: string, exchange: string, qty: number, price: number, trade: AbstractControl): number {
     //Constants
