@@ -86,7 +86,7 @@ export class LedgerComponent implements OnInit {
     let oldTurnover = trade.get('turnover')?.value
     if (oldTurnover != null) {
       let oldTotalTurnover = day.get('totalTurnover')?.value
-      let newTotalTurnover = oldTotalTurnover - oldTurnover;
+      let newTotalTurnover = this.roundToTwoDecimals(oldTotalTurnover - oldTurnover);
       day.get('totalTurnover')?.patchValue(newTotalTurnover)
     }
     let oldCalculateCommission = trade.get('calculatedCommission')?.value
@@ -117,7 +117,7 @@ export class LedgerComponent implements OnInit {
 
       if (oldTurnover != null) {
         let oldTotalTurnover: number = day.get('totalTurnover')?.value
-        let newTotalTurnover: number = oldTotalTurnover - oldTurnover;
+        let newTotalTurnover: number = this.roundToTwoDecimals(oldTotalTurnover - oldTurnover);
         day.get('totalTurnover')?.patchValue(newTotalTurnover)
       }
       if (oldCalculatedCommission != null) {
@@ -138,10 +138,10 @@ export class LedgerComponent implements OnInit {
       return
     }
 
-    let turnover: number = price * qty
+    let turnover: number = this.roundToTwoDecimals(price * qty)
     let oldTurnover = trade.get('turnover')?.value;
     let oldTotalTurnover: number = day.get('totalTurnover')?.value
-    let newTotalTurnover: number = oldTotalTurnover - oldTurnover + turnover
+    let newTotalTurnover: number = this.roundToTwoDecimals(oldTotalTurnover - oldTurnover + turnover)
     day.get('totalTurnover')?.patchValue(newTotalTurnover)
     trade.get('turnover')?.patchValue(turnover)
 
