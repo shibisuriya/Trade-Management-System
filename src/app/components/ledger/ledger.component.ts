@@ -1,7 +1,6 @@
-import { TransitiveCompileNgModuleMetadata } from '@angular/compiler';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, AbstractControl, Validators } from '@angular/forms';
-
+import { parse, validate } from 'fast-xml-parser'
 
 @Component({
   selector: 'app-ledger',
@@ -283,5 +282,40 @@ export class LedgerComponent implements OnInit {
       ]
     }
   }
+  xmlFile: any;
+  public loadXML(event: any) {
 
+    if (event.target.files == null)
+      return;
+
+    let file = event.target.files[0];
+    let fileReader: FileReader = new FileReader();
+    fileReader.onloadend = (x) => {
+      this.xmlFile = fileReader.result
+
+      let options = {
+        attrNodeName: "attr", //default is 'false'
+        textNodeName: "#text",
+        ignoreAttributes: false,
+        ignoreNameSpace: false,
+        allowBooleanAttributes: false,
+        parseNodeValue: true,
+        parseAttributeValue: false,
+        trimValues: true,
+        cdataTagName: "__cdata", //default is 'false'
+        cdataPositionChar: "\\c",
+        parseTrueNumberOnly: false,
+        arrayMode: false, //"strict"
+        stopNodes: ["parse-me-as-string"]
+      };
+
+      if (validate(this.xmlFile) === true) { //optional (it'll return an object in case it's not valid)
+        this.xmlFile = parse(this.xmlFile, options);
+        //this.xmlFile = this.xmlFile.contract_note.contracts;
+        //console.log(this.xmlFile.contract.length)
+
+      }
+    }
+    fileReader.readAsText(file);
+  }
 }

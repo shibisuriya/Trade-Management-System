@@ -1,5 +1,5 @@
 <div>
-    <input type="file" />
+    <input type="file" (change)="loadXML($event)" />
 </div>
 <div>
     <!-- <button (click)="stressTest()">stress test</button> -->
@@ -102,4 +102,7 @@
     <h4>GST : {{modalGst}}</h4>
     <h4>SEBI Charges : {{modalSebiCharges}}</h4>
     <h4>Stamp Charges : {{modalStampCharges}}</h4>
+</div>
+<div>
+    {{xmlFile | json}}
 </div>
