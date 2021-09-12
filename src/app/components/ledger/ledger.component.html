@@ -1,5 +1,5 @@
 <div>
-    <input type="file" (change)="loadXML($event)" />
+    <input type="file" (change)="loadXML($event)" accept=".xml" multiple />
 </div>
 <div>
     <!-- <button (click)="stressTest()">stress test</button> -->
@@ -103,6 +103,9 @@
     <h4>SEBI Charges : {{modalSebiCharges}}</h4>
     <h4>Stamp Charges : {{modalStampCharges}}</h4>
 </div>
-<div>
-    {{xmlFile | json}}
+<div class="test">
+    {{trades | json}}
+</div>
+<div class="test">
+    {{contractNotes | json}}
 </div>

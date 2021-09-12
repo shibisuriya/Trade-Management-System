@@ -55,3 +55,7 @@ button {
 .invalid-input {
     border: 1px solid red;
 }
+.test {
+    padding: 1em;
+    margin: 1em;
+}

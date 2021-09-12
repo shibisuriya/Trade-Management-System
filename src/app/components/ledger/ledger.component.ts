@@ -282,40 +282,63 @@ export class LedgerComponent implements OnInit {
       ]
     }
   }
-  xmlFile: any;
+  fullXmlFile: any;
+  contractNotes: any;
+  trades: Array<[]> = [];
   public loadXML(event: any) {
+    this.fullXmlFile = {}
+    this.contractNotes = {}
+    this.trades = []
 
     if (event.target.files == null)
       return;
 
+    let totNumberOfFiles = event.target.files.length
     let file = event.target.files[0];
     let fileReader: FileReader = new FileReader();
-    fileReader.onloadend = (x) => {
-      this.xmlFile = fileReader.result
+    fileReader.readAsText(file);
+
+    fileReader.onloadend = () => {
+      this.fullXmlFile = fileReader.result
 
       let options = {
-        attrNodeName: "attr", //default is 'false'
+        trimValues: true,
+        attributeNamePrefix: "@_",
         textNodeName: "#text",
         ignoreAttributes: false,
-        ignoreNameSpace: false,
-        allowBooleanAttributes: false,
+        attrNodeName: "@",
+        allowBooleanAttributes: true,
         parseNodeValue: true,
-        parseAttributeValue: false,
-        trimValues: true,
-        cdataTagName: "__cdata", //default is 'false'
-        cdataPositionChar: "\\c",
-        parseTrueNumberOnly: false,
-        arrayMode: false, //"strict"
-        stopNodes: ["parse-me-as-string"]
+        parseAttributeValue: true,
+        parseTrueNumberOnly: true,
       };
 
-      if (validate(this.xmlFile) === true) { //optional (it'll return an object in case it's not valid)
-        this.xmlFile = parse(this.xmlFile, options);
-        //this.xmlFile = this.xmlFile.contract_note.contracts;
-        //console.log(this.xmlFile.contract.length)
-
+      if (validate(this.fullXmlFile) === true) {
+        this.fullXmlFile = parse(this.fullXmlFile, options);
+        this.contractNotes = this.fullXmlFile.contract_note.contracts.contract;
+        // Check if the XML file has multiple contract notes.
+        if (Array.isArray(this.contractNotes)) {
+          for (let contractNote of this.contractNotes) {
+            this.trades.push(contractNote.trades.trade)
+          }
+          // Check if the XML file has single contract note.
+        } else if (typeof this.contractNotes === "object" && this.contractNotes !== null) {
+          console.log("Only 1 contract exists... ")
+          this.trades.push(this.contractNotes.trades.trade)
+        }
       }
+      // Extract data from the lists of list
+      for (let contractNote of this.trades) {
+        if (Array.isArray(contractNote)) {
+          for (let trades of contractNote) {
+            console.log(trades)
+          }
+        // Dealing with contractNote with single trade.
+        } else if(typeof contractNote === "object" && contractNote !== null) {
+          console.log(contractNote)
+        }
+      }
+
     }
-    fileReader.readAsText(file);
   }
 }
