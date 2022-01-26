@@ -1,0 +1,26 @@
+<div>
+    <form [formGroup]="registrationForm">
+        <div>
+            <label>Enter username: </label>
+            <input type="text" formControlName="username" />
+        </div>
+        <div>
+            <label>Enter email address: </label>
+            <input type="text" formControlName="email" />
+        </div>
+        <div>
+            <label>Enter password: </label>
+            <input type="password" formControlName="password" />
+        </div>
+        <div>
+            <label>Confirm password: </label>
+            <input type="password" formControlName="confirmPassword" />
+        </div>
+    </form>
+    <div>
+        Already have an <a href="/login">account</a>?
+    </div>
+    <div>
+        <button>Register</button>
+    </div>
+</div>

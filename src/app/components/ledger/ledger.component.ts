@@ -284,11 +284,11 @@ export class LedgerComponent implements OnInit {
   }
   fullXmlFile: any;
   contractNotes: any;
-  trades: Array<[]> = [];
+  tradesList: Array<[]> = [];
   public loadXML(event: any) {
     this.fullXmlFile = {}
     this.contractNotes = {}
-    this.trades = []
+    this.tradesList = []
 
     if (event.target.files == null)
       return;
@@ -316,29 +316,37 @@ export class LedgerComponent implements OnInit {
       if (validate(this.fullXmlFile) === true) {
         this.fullXmlFile = parse(this.fullXmlFile, options);
         this.contractNotes = this.fullXmlFile.contract_note.contracts.contract;
+        
         // Check if the XML file has multiple contract notes.
         if (Array.isArray(this.contractNotes)) {
           for (let contractNote of this.contractNotes) {
-            this.trades.push(contractNote.trades.trade)
+            this.tradesList.push(contractNote.trades.trade)
+            let timestamp = contractNote.timestamp;
+            console.log(timestamp)
           }
           // Check if the XML file has single contract note.
         } else if (typeof this.contractNotes === "object" && this.contractNotes !== null) {
           console.log("Only 1 contract exists... ")
-          this.trades.push(this.contractNotes.trades.trade)
+          this.tradesList.push(this.contractNotes.trades.trade)
+          let timestamp = this.contractNotes.timestamp;
+          console.log(timestamp)
         }
       }
       // Extract data from the lists of list
-      for (let contractNote of this.trades) {
-        if (Array.isArray(contractNote)) {
-          for (let trades of contractNote) {
-            console.log(trades)
+      for (let trades of this.tradesList) {
+        if (Array.isArray(trades)) {
+          for (let trade of trades) {
+            this.addTradeToTemplate(trade)
           }
         // Dealing with contractNote with single trade.
-        } else if(typeof contractNote === "object" && contractNote !== null) {
-          console.log(contractNote)
+        } else if(typeof trades === "object" && trades !== null) {
+          this.addTradeToTemplate(trades)
         }
       }
 
     }
+  }
+  addTradeToTemplate(trade: any) {
+    console.log(trade)
   }
 }
